@@ -1,0 +1,84 @@
+#define F_CPU 16000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+
+#define BAUD 9600
+#define MYUBRR F_CPU/16/BAUD-1
+
+#define DC_MOTOR_PIN1 PB1
+#define DC_MOTOR_PIN2 PB2
+#define DC_MOTOR_PIN3 PD5
+#define DC_MOTOR_PIN4 PD6
+
+void USART_Init(unsigned int ubrr)
+{
+	UBRR0H = (unsigned char)(ubrr>>8);
+	UBRR0L = (unsigned char)ubrr;
+	UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+	UCSR0C = (1<<USBS0)|(3<<UCSZ00);
+}
+
+void USART_Transmit(unsigned char data)
+{
+	while ( !( UCSR0A & (1<<UDRE0)) );
+	UDR0 = data;
+}
+
+unsigned char USART_Receive(void)
+{
+	while ( !(UCSR0A & (1<<RXC0)) );
+	return UDR0;
+}
+
+void PWM_init()
+{
+	//모터1, 2핀
+	TCCR1A |= (1<<COM1A1) | (1<<COM1B1) | (1<<WGM11);
+	TCCR1B |= (1<<WGM13) | (1<<WGM12) | (1<<CS11);
+	ICR1 = 625;
+	OCR0B = 0;
+	OCR0A = 0;
+	
+	//모터3, 4핀
+	TCCR0A |= (1<<COM0A1) | (1<<COM0B1) | (1<<WGM01) | (1<<WGM00);
+	TCCR0B |= (1<<CS01);
+	ICR1 = 625;
+	OCR1A = 0;
+	OCR1B = 0;
+}
+
+int main(void)
+{
+	USART_Init(MYUBRR);
+	PWM_init();
+	DDRB |= (1<<DDB1) | (1<<DDB2);
+	DDRD |= (1<<DDD5) | (1<<DDD6);
+	while (1) {
+		char command = USART_Receive();
+		switch (command) {
+			case 'F':
+			OCR1A = 250;
+			OCR1B = 0;
+			OCR0A = 0;
+			OCR0B = 120;
+			break;
+			case 'B':
+			OCR1A = 0;
+			OCR1B = 250;
+			OCR0A = 120;
+			OCR0B = 0;
+			break;
+			case 'S':
+			OCR1A = 0;
+			OCR1B = 0;
+			OCR0A = 0;
+			OCR0B = 0;
+			break;
+			default:
+			break;
+
+		}
+	}
+	return 0;
+}

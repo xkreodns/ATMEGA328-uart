@@ -1,0 +1,24 @@
+#include <avr/io.h>
+
+int main(void)
+{
+	// L298N의 IN1, IN2 핀에 연결된 핀의 번호를 지정합니다.
+	// 이 예제에서는 PB0, PB1을 사용하겠습니다.
+	const uint8_t IN1_PIN = 0;
+	const uint8_t IN2_PIN = 1;
+
+	// IN1, IN2 핀을 출력으로 설정합니다.
+	DDRB |= (1 << IN1_PIN) | (1 << IN2_PIN);
+
+	// IN1 핀에는 전압을 인가하고 IN2 핀에는 전압을 배제하여
+	// DC 모터를 정방향으로 구동합니다.
+	PORTB |= (1 << IN1_PIN);
+	PORTB &= ~(1 << IN2_PIN);
+
+	// 무한 루프
+	while (1) {
+		// 아무 일도 하지 않음
+	}
+
+	return 0;
+}

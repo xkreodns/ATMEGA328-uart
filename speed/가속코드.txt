@@ -1,0 +1,40 @@
+#define F_CPU 16000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+
+// DC 모터 관련 상수 정의
+#define DC_MOTOR_DDR DDRB
+#define DC_MOTOR_PORT PORTB
+#define DC_MOTOR_PIN1 PB0
+#define DC_MOTOR_PIN2 PB1
+
+// 초기화 함수
+void setup() {
+	// DC 모터 출력 핀으로 설정
+	DC_MOTOR_DDR |= (1 << DC_MOTOR_PIN1);
+	DC_MOTOR_DDR |= (1 << DC_MOTOR_PIN2);
+}
+
+// 반복 실행할 함수
+void loop() {
+	// DC 모터 가속
+	DC_MOTOR_PORT |= (1 << DC_MOTOR_PIN1);
+	DC_MOTOR_PORT &= ~(1 << DC_MOTOR_PIN2);
+	_delay_ms(1000); // 1초 대기
+
+	// DC 모터 멈춤
+	DC_MOTOR_PORT &= ~(1 << DC_MOTOR_PIN1);
+	DC_MOTOR_PORT &= ~(1 << DC_MOTOR_PIN2);
+	_delay_ms(1000); // 1초 대기
+}
+
+int main(void) {
+	setup();
+
+	while (1) {
+		loop();
+	}
+
+	return 0;
+}
